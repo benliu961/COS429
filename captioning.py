@@ -11,6 +11,7 @@ import torch
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+
 def caption(image_path, model_type="GIT"):
     try:
         # Load the image
@@ -21,28 +22,49 @@ def caption(image_path, model_type="GIT"):
             processor = AutoProcessor.from_pretrained("microsoft/git-base-coco")
             model = AutoModelForCausalLM.from_pretrained("microsoft/git-base-coco")
             model = model.to(device)
-            pixel_values = processor(images=image, return_tensors="pt").pixel_values.to(device)
+            pixel_values = processor(images=image, return_tensors="pt").pixel_values.to(
+                device
+            )
             generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
-            generated_caption = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            generated_caption = processor.batch_decode(
+                generated_ids, skip_special_tokens=True
+            )[0]
             return generated_caption
         elif model_type == "LLAVA":
-            model = LlavaForConditionalGeneration.from_pretrained("llava-hf/llava-1.5-7b-hf")
+            model = LlavaForConditionalGeneration.from_pretrained(
+                "llava-hf/llava-1.5-7b-hf"
+            )
             model = model.to(device)
             processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
             prompt = "USER: <image>\nCaption this image ASSISTANT:"
-            inputs = processor(text=prompt, images=image, return_tensors="pt").to(device)
+            inputs = processor(text=prompt, images=image, return_tensors="pt").to(
+                device
+            )
             generate_ids = model.generate(**inputs, max_new_tokens=15)
-            generated_text = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-            return generated_text[generated_text.find("ASSISTANT:")+1:]
+            generated_text = processor.batch_decode(
+                generate_ids,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            )[0]
+            return generated_text[generated_text.find("ASSISTANT:") + 1 :]
         elif model_type == "BLIP-2":
             processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b")
-            model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-opt-2.7b", load_in_8bit=True, device_map={"": 0}, torch_dtype=torch.float16)
+            model = Blip2ForConditionalGeneration.from_pretrained(
+                "Salesforce/blip2-opt-2.7b",
+                load_in_8bit=True,
+                device_map={"": 0},
+                torch_dtype=torch.float16,
+            )
             model = model.to(device)
-            inputs = processor(images=image, return_tensors="pt").to(device, torch.float16)
+            inputs = processor(images=image, return_tensors="pt").to(
+                device, torch.float16
+            )
             generated_ids = model.generate(**inputs)
-            generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
+            generated_text = processor.batch_decode(
+                generated_ids, skip_special_tokens=True
+            )[0].strip()
             return generated_text
-        else: 
+        else:
             print(f"Unsupported model type: {model_type}")
             return None
         # caption = "This is a caption."
@@ -50,7 +72,7 @@ def caption(image_path, model_type="GIT"):
     except Exception as e:
         print(f"Error processing image {image_path}: {e}")
         return None
-    
+
 
 pairs = "C:/Users/Benjamin Liu/Downloads/sim_stable_percentiles.csv"
 data = pd.read_csv(pairs)
@@ -63,9 +85,7 @@ image_directory = "C:/Datasets/COCO/val2014/"
 
 output = []
 
-for index, row in tqdm(
-    data.iterrows(), total=data.shape[0], desc="Processing images"
-):
+for index, row in tqdm(data.iterrows(), total=data.shape[0], desc="Processing images"):
     dark_id = str(int(row["dark_id"]))
     light_id = str(int(row["light_id"]))
     dark_filename = f"COCO_val2014_{dark_id.zfill(12)}.jpg"
@@ -82,6 +102,9 @@ for index, row in tqdm(
 
     output.append([dark_caption, light_caption, dark_id, light_id, row["similarity"]])
 
-output_df = pd.DataFrame(output, columns=["dark_caption", "light_caption", "dark_id", "light_id", "similarity"])
+output_df = pd.DataFrame(
+    output,
+    columns=["dark_caption", "light_caption", "dark_id", "light_id", "similarity"],
+)
 
 output_df.to_csv("C:/Users/Benjamin Liu/Downloads/captions_LLAVA.csv", index=False)

@@ -32,5 +32,5 @@ def view_coco_image(image_id):
 
 # Example usage:
 # Replace '000000000139' with the ID of the image you want to view
-view_coco_image("81103")
-view_coco_image("11538")
+view_coco_image("508370")
+view_coco_image("11149")
