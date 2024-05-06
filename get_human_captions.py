@@ -2,7 +2,7 @@ import pandas as pd
 import json
 
 # Load the CSV file with the ID pairs
-git_captions_file = "C:/Users/ewang/OneDrive/Desktop/Spring_2024/COS_429/Final/captions_GIT_20_percent.csv"
+git_captions_file = "C:/Users/ewang/OneDrive/Desktop/Spring_2024/COS_429/Final/captions_GIT_cos_40_percent.csv"
 git_captions = pd.read_csv(git_captions_file)
 
 # Load the JSON file with human captions
@@ -43,4 +43,4 @@ human_captions = pd.DataFrame(new_captions_data)
 print(human_captions.head())
 
 # Save the new DataFrame to a CSV file if needed
-human_captions.to_csv("captions_human_20_percent.csv", index=False)
+human_captions.to_csv("captions_human_40_percent.csv", index=False)

@@ -29,7 +29,6 @@ def extract_hog_features(image_path):
         pixels_per_cell=(16, 16),
         cells_per_block=(1, 1),
         visualize=False,
-        channel_axis=-1,
     )
     return fd
 
